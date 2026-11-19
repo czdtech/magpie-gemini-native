@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# pre-commit leak guard. Scans staged ADDITIONS only; reports counts, never the matched
+# text. Blocks credential-shaped filenames. Skips itself (it carries the pattern shapes).
+# Patterns are SHAPES, not literal personal values, so publishing this file leaks nothing.
+# Install (hooks are not versioned): cp scripts/git-hooks/pre-commit .git/hooks/pre-commit
+set -euo pipefail
+self="scripts/git-hooks/pre-commit"
+personal='/Users/[A-Za-z0-9._-]+/|[A-Za-z0-9._%+-]+@(gmail|googlemail)\.com|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+creds='AQ\.[A-Za-z0-9_-]{20,}|gho_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}'
+badname='(^|/)(\.env|[^/]*credential[^/]*|[^/]*secret[^/]*|api\.txt|plugin-auth\.json|providers\.json|[^/]*\.key|[^/]*\.pem)$'
+fail=0
+while IFS= read -r f; do
+  [ "$f" = "$self" ] && continue
+  [ -f "$f" ] || continue
+  if printf '%s' "$f" | grep -Eq "$badname"; then
+    echo "leak-guard: credential-shaped filename staged: $f" >&2
+    fail=1
+    continue
+  fi
+  n=$(grep -Eic "$personal|$creds" "$f" || true)
+  if [ "${n:-0}" -gt 0 ]; then
+    echo "leak-guard: $f: $n matching line(s) (personal info / credential shape); text not printed" >&2
+    fail=1
+  fi
+done < <(git diff --cached --name-only --diff-filter=A)
+exit "$fail"
