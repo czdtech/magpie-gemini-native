@@ -1,0 +1,18 @@
+{
+  "name": "magpie-gemini-native",
+  "version": "0.1.0",
+  "description": "OpenCode provider plugin: Google AI Studio native TTS (generateContent AUDIO) and embeddings (embedContent) for magpie's /v1/audio/speech and /v1/embeddings.",
+  "type": "module",
+  "main": "./index.ts",
+  "files": ["index.ts", "README.md"],
+  "keywords": ["opencode", "opencode-plugin", "gemini", "tts", "embedding"],
+  "license": "MIT",
+  "magpie": {
+    "name": "Gemini Native (TTS · Embedding)",
+    "maxConcurrency": 2,
+    "summary": {
+      "en": "Google AI Studio native TTS and embeddings routed through magpie's /v1/audio/speech and /v1/embeddings.",
+      "zh": "把 Google AI Studio 原生 TTS（generateContent AUDIO）与 embedding（embedContent）接进 magpie 的 /v1/audio/speech 与 /v1/embeddings。"
+    }
+  }
+}
